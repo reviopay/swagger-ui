@@ -15,5 +15,48 @@
     <script src="./swagger-ui-bundle.js" charset="UTF-8"> </script>
     <script src="./swagger-ui-standalone-preset.js" charset="UTF-8"> </script>
     <script src="./swagger-initializer.js" charset="UTF-8"> </script>
+    <script>
+      window.onload = function() {
+        // Set the swagger yaml location
+        const params = new URLSearchParams(window.location.search);
+        const configUrl = "swagger.yaml";
+
+        // Remove "try it out"
+        const DisableTryItOutPlugin = function() {
+          return {
+            statePlugins: {
+              spec: {
+                wrapSelectors: {
+                  allowTryItOutFor: () => () => false
+                }
+              }
+            }
+          }
+        }
+        
+        const ui = SwaggerUIBundle({
+          url: configUrl ? configUrl : "https://petstore.swagger.io/v2/swagger.json",
+          dom_id: '#swagger-ui',
+          deepLinking: true,
+          presets: [
+            SwaggerUIBundle.presets.apis,
+            SwaggerUIStandalonePreset
+          ],
+          plugins: [
+            SwaggerUIBundle.plugins.DownloadUrl,
+            DisableTryItOutPlugin
+          ],
+          layout: "StandaloneLayout"
+        });
+        
+        // Remove topbar
+        const elements = document.getElementsByClassName("topbar");
+        while(elements.length > 0){
+            elements[0].parentNode.removeChild(elements[0]);
+        }
+    
+        window.ui = ui;
+      };
+    </script>
   </body>
 </html>
