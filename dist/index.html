@@ -11,6 +11,8 @@
   </head>
 
   <body>
+
+    <center><input style="position:relative; top:20px; box-shadow: 10px 10px #71D60A; border-width: 3px; border-color: red;" id="bearer-code-input" size="50" type="text" placeholder="Enter Bearer Token here" value="Enter bearer token here" /></center>
     <div id="swagger-ui"></div>
     <script src="./swagger-ui-bundle.js" charset="UTF-8"> </script>
     <script src="./swagger-ui-standalone-preset.js" charset="UTF-8"> </script>
@@ -45,7 +47,15 @@
           plugins: [
             SwaggerUIBundle.plugins.DownloadUrl
           ],
-          layout: "StandaloneLayout"
+          layout: "StandaloneLayout",
+          requestInterceptor: function (req) {
+            req.headers = {
+            'Authorization': 'Bearer ' + document.getElementById('bearer-code-input').value
+            , 'Accept': 'application/json',
+            'Content-Type': 'application/json'
+            };
+            return req;
+          },
         });
         
         // Remove topbar
