@@ -21,7 +21,7 @@
         const params = new URLSearchParams(window.location.search);
         const configUrl = "swagger.yaml";
 
-        // Remove "try it out"
+        // Plugin to disable "try it out"
         const DisableTryItOutPlugin = function() {
           return {
             statePlugins: {
@@ -43,8 +43,7 @@
             SwaggerUIStandalonePreset
           ],
           plugins: [
-            SwaggerUIBundle.plugins.DownloadUrl,
-            DisableTryItOutPlugin
+            SwaggerUIBundle.plugins.DownloadUrl
           ],
           layout: "StandaloneLayout"
         });
