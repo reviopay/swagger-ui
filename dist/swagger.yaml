@@ -214,6 +214,8 @@ info:
     \ due to not implementing payload signature verification.\n"
 servers:
 - url: https://gate.revio.co.za/api/v1
+security: 
+  -  bearerAuth: []
 paths:
   /purchases/:
     post:
@@ -533,6 +535,7 @@ paths:
       - url: https://gate.revio.co.za
         description: Production Website
     post:
+      security: []
       operationId: purchases_pay
       responses:
         '200':
@@ -545,7 +548,7 @@ paths:
             text/plain:
               schema:
                 type: string
-                example: pong
+                example: <h1>THANK YOU FOR SUBSCRIBING<h1>
       requestBody:
         required: true
         content:
@@ -776,7 +779,7 @@ paths:
                 description: A list of Purchase IDs created.
                 type: array
                 items:
-                  $ref: '#/components/parameters/id'
+                  $ref: '#/components/schemas/UUID'
                 example:
                 - 720e2c96-ef94-4baa-90b6-d61ef6fd675a
         '400':
@@ -837,6 +840,19 @@ paths:
       tags:
       - Billing
     get:
+      parameters:
+        - $ref: '#/components/parameters/q'
+          description: |
+            Search fields of billing templates
+        - name: client_id
+          in: query
+          schema:
+            $ref: "#/components/schemas/UUID"
+          description: |
+            Get all billing templates that a client is subscribed to
+
+            This returns a list of billing templates, not the billing_template_client that
+            represents the clients subscriptions
       operationId: billing_templates_list
       responses:
         '200':
@@ -1213,11 +1229,8 @@ paths:
     get:
       description: List all clients
       parameters:
-        - in: query
-          name: q
-          schema:
-            type: string
-          description: >-
+        - $ref: '#/components/parameters/q'
+          description: |
             Search for a client by query.
 
 
@@ -1696,6 +1709,11 @@ paths:
       tags:
       - Company Statements
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   parameters:
     id:
       name: id
@@ -2312,6 +2330,8 @@ components:
           items:
             type: string
             description: Payment method name as returned by `GET /payment_methods/`.
+        subscription_default_service_type:
+          $ref: '#/components/schemas/EFTServiceType'
     City:
       type: string
       maxLength: 128
@@ -3872,6 +3892,10 @@ components:
                   type: string
                 account_number:
                   type: string
+                default_service_type:
+                  $ref: '#/components/schemas/EFTServiceType'
+                  type: [string, "null"]
+                
     PurchaseStatus:
       type: string
       description: "Purchase status. Can have the following values: \n\n`created`:\
@@ -3947,6 +3971,26 @@ components:
       - chargeback
       - pending_refund
       - refunded
+    EFTServiceType:
+      description: |
+        Service Type is the collection instrument used at the bank, which differs in days taken to execute
+
+        A purchase `due` needs to be valid equal to or longer than the timeframe 
+        of the token service type that will be used to collect it.
+        e.g. a purchase due tomorrow (Today + 1) cannot be created/charged with a `TWODAY` serviceType/token
+
+        You create `recurring_token`s with purchases and its service type is determined by the purchase
+        that created it.
+        A recurring token can only pay/charge a purchase that is of the same service type as itself.
+        e.g. You can only charge a ONEDAY puchase with a ONEDAY recurring token.
+
+        When creating a purchase, `force_recurring` must be true to use the `default_service_type`.
+      type: string
+      default: TWODAY
+      enum:
+        - SAMEDAY
+        - ONEDAY
+        - TWODAY
     StreetAddress:
       type: string
       maxLength: 128
